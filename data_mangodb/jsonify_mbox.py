@@ -1,21 +1,16 @@
-# Convert an mbox to a JSON structure suitable to import into Elasticsearch
+# Convert an mbox to a JSON structure suitable to import into MongoDB
 
-import sys
 import mailbox
 import quopri
 import json
 import time
 from bs4 import BeautifulSoup
-from dateutil.parser import parse  # pip install python_dateutil
+from dateutil.parser import parse
+from bson import json_util
 
 
-MBOX = sys.argv[1]
-OUT_FILE = sys.argv[2]
-# OUT_FILE = None
-# try:
-#     OUT_FILE = sys.argv[2]
-# except Exception, e:
-#     pass
+MBOX = 'enron.mbox'
+OUT_FILE = MBOX + '.json'
 
 
 def clean_content(msg):
@@ -39,6 +34,16 @@ def clean_content(msg):
 
 class Encoder(json.JSONEncoder):
     def default(self, o): return list(o)
+
+
+# The generator itself...
+def gen_json_msgs(mb):
+    while 1:
+        msg = mb.next()
+        if msg is None:
+            break
+
+        yield jsonify_message(msg)
 
 
 def jsonify_message(msg):
@@ -74,7 +79,8 @@ def jsonify_message(msg):
             millis = int(time.mktime(then.timetuple()) * 1000 + then.microsecond / 1000)
             json_msg['Date'] = {'$date': millis}
         except KeyError:
-            json_msg['Date'] = {'$date': ''}
+            # json_msg['Date'] = {'$date': ''}
+            pass
 
     return json_msg
 
@@ -82,11 +88,15 @@ def jsonify_message(msg):
 mbox = mailbox.mbox(MBOX)
 
 # Write each message out as a JSON object on a separate line
+# for easy import into MongoDB via mongoimport
 
-f = open(OUT_FILE, 'w')
+f = open(
+    
+    OUT_FILE, 'w')
 for msg in mbox:
     if msg != None:
-        f.write(json.dumps(jsonify_message(msg), cls=Encoder) + '\n')
+        f.write(json.dumps(jsonify_message(msg), cls=Encoder,default=json_util.default) + '\n')
 f.close()
+
 
 print("All done")

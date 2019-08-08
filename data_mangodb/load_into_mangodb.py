@@ -2,6 +2,10 @@
 
 import pymongo # pip install pymongo
 from bson import json_util # Comes with pymongo
+import envoy
+import os
+import sys
+import json
 
 data_file = os.path.join(os.getcwd(), 'enron.mbox.json')
 
@@ -15,8 +19,7 @@ print(r.std_out)
 print(sys.stderr.write(r.std_err))
 
 
-# Connects to the MongoDB server running on
-# localhost:27017 by default
+# Connects to the MongoDB server running on localhost:27017
 
 client = pymongo.MongoClient()
 
