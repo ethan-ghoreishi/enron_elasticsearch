@@ -1,4 +1,4 @@
-# Convert an mbox to a JSON structure suitable to import into MongoDB
+# Convert an mbox to a JSON structure suitable to import into Elasticsearch
 
 import mailbox
 import quopri
